@@ -61,7 +61,7 @@ open class PermissionAlert {
     fileprivate var cancelActionTitle: String?
     fileprivate var defaultActionTitle: String?
     
-    var controller: UIAlertController {
+    var controller: UIViewController {
         let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         let action = UIAlertAction(title: cancelActionTitle, style: .cancel, handler: cancelHandler)
@@ -85,6 +85,17 @@ open class PermissionAlert {
     }
 }
 
+public extension PermissionAlert {
+    /// Creates a custom permission alert from the current alert
+    ///
+    /// - Parameter delegate: the custom permission alert delegate
+    /// - Returns: the new permission alert
+    public func createCustomAlert(customAlertDelegate delegate: CustomPermissionAlertDelegate) -> PermissionAlert {
+        return CustomPermissionAlert(permission: self.permission, existingAlert: self, delegate: delegate)
+    }
+}
+
+
 internal class DisabledAlert: PermissionAlert {
     override init(permission: Permission) {
         super.init(permission: permission)
@@ -96,14 +107,16 @@ internal class DisabledAlert: PermissionAlert {
 }
 
 internal class DeniedAlert: PermissionAlert {
-    override var controller: UIAlertController {
+    override var controller: UIViewController {
         let controller = super.controller
         
-        let action = UIAlertAction(title: defaultActionTitle, style: .default, handler: settingsHandler)
-        controller.addAction(action)
-
-        if #available(iOS 9.0, *) {
-            controller.preferredAction = action
+        if let controller = controller as? UIAlertController {
+            let action = UIAlertAction(title: defaultActionTitle, style: .default, handler: settingsHandler)
+            controller.addAction(action)
+            
+            if #available(iOS 9.0, *) {
+                controller.preferredAction = action
+            }
         }
         
         return controller
@@ -123,7 +136,7 @@ internal class DeniedAlert: PermissionAlert {
         callbacks(status)
     }
     
-    private func settingsHandler(_ action: UIAlertAction) {
+    fileprivate func settingsHandler(_ action: UIAlertAction) {
         NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: .UIApplicationDidBecomeActive)
         
         if let URL = URL(string: UIApplicationOpenSettingsURLString) {
@@ -133,14 +146,17 @@ internal class DeniedAlert: PermissionAlert {
 }
 
 internal class PrePermissionAlert: PermissionAlert {
-    override var controller: UIAlertController {
+    override var controller: UIViewController {
         let controller = super.controller
         
-        let action = UIAlertAction(title: defaultActionTitle, style: .default, handler: confirmHandler)
-        controller.addAction(action)
-
-        if #available(iOS 9.0, *) {
-            controller.preferredAction = action
+        if let controller = controller as? UIAlertController {
+            
+            let action = UIAlertAction(title: defaultActionTitle, style: .default, handler: confirmHandler)
+            controller.addAction(action)
+            
+            if #available(iOS 9.0, *) {
+                controller.preferredAction = action
+            }
         }
         
         return controller
@@ -159,3 +175,45 @@ internal class PrePermissionAlert: PermissionAlert {
         permission.requestAuthorization(callbacks)
     }
 }
+
+public protocol CustomPermissionAlertDelegate {
+    func createAlertController(onCancel: (() -> Void), goToSettings: (() -> Void)?, requestAccess: (() -> Void)?) -> UIViewController
+}
+
+internal class CustomPermissionAlert: PermissionAlert {
+    
+    var delegate: CustomPermissionAlertDelegate
+    var permissionAlert: PermissionAlert
+    fileprivate lazy var fakeAction: UIAlertAction = UIAlertAction(title: "", style: .default, handler: nil)
+    
+    override var controller: UIViewController {
+        return delegate.createAlertController(onCancel: self.onCancel, goToSettings: self.goToSettings, requestAccess: self.onRequestAccess)
+    }
+    
+    
+    public init(permission: Permission, existingAlert alert: PermissionAlert, delegate: CustomPermissionAlertDelegate) {
+        self.delegate = delegate
+        self.permissionAlert = alert
+        super.init(permission: permission)
+    }
+    
+    func onCancel() {
+        self.permissionAlert.cancelHandler(self.fakeAction)
+    }
+    
+    func goToSettings() {
+        if let alert = self.permissionAlert as? DeniedAlert {
+            alert.settingsHandler(self.fakeAction)
+        }
+    }
+    
+    func onRequestAccess() {
+        if let alert = self.permissionAlert as? PrePermissionAlert {
+            alert.confirmHandler(self.fakeAction)
+        }
+    }
+    
+}
+
+
+

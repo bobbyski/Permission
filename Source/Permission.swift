@@ -205,6 +205,10 @@ open class Permission: NSObject {
         return PrePermissionAlert(permission: self)
     }()
     
+    open func useCustomPrePermissionAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+        self.prePermissionAlert = self.prePermissionAlert.createCustomAlert(customAlertDelegate: delegate)
+    }
+    
     /// Determines whether to present the denied alert.
     open var presentDeniedAlert = true
     
@@ -213,6 +217,10 @@ open class Permission: NSObject {
         return DeniedAlert(permission: self)
     }()
     
+    open func useCustomDeniedAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+        self.deniedAlert = self.deniedAlert.createCustomAlert(customAlertDelegate: delegate)
+    }
+    
     /// Determines whether to present the disabled alert.
     open var presentDisabledAlert = true
     
@@ -220,6 +228,10 @@ open class Permission: NSObject {
     open lazy var disabledAlert: PermissionAlert = {
         return DisabledAlert(permission: self)
     }()
+    
+    open func useCustomDisabledAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+        self.disabledAlert = self.disabledAlert.createCustomAlert(customAlertDelegate: delegate)
+    }
     
     internal var callback: Callback?
     
