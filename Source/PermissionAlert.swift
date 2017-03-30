@@ -79,7 +79,7 @@ open class PermissionAlert {
             UIApplication.shared.presentViewController(self.controller)
         }
     }
-
+    
     fileprivate func cancelHandler(_ action: UIAlertAction) {
         callbacks(status)
     }
@@ -176,8 +176,8 @@ internal class PrePermissionAlert: PermissionAlert {
     }
 }
 
-public protocol CustomPermissionAlertDelegate {
-    func createAlertController(onCancel: (() -> Void), goToSettings: (() -> Void)?, requestAccess: (() -> Void)?) -> UIViewController
+@objc public protocol CustomPermissionAlertDelegate {
+    func createAlertController(onCancel: @escaping (() -> Void), goToSettings: (() -> Void)?, requestAccess: (() -> Void)?) -> UIViewController
 }
 
 internal class CustomPermissionAlert: PermissionAlert {
@@ -195,6 +195,11 @@ internal class CustomPermissionAlert: PermissionAlert {
         self.delegate = delegate
         self.permissionAlert = alert
         super.init(permission: permission)
+        self.title = alert.title
+        self.message = alert.message
+        self.cancel = alert.cancel
+        self.settings = alert.settings
+        self.confirm = alert.confirm
     }
     
     func onCancel() {
