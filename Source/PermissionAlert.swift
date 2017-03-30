@@ -177,7 +177,7 @@ internal class PrePermissionAlert: PermissionAlert {
 }
 
 @objc public protocol CustomPermissionAlertDelegate {
-    func createAlertController(onCancel: @escaping (() -> Void), goToSettings: (() -> Void)?, requestAccess: (() -> Void)?) -> UIViewController
+    func createAlertController(onCancel: @escaping (() -> Void), goToSettings: @escaping (() -> Void), requestAccess: @escaping (() -> Void)) -> UIViewController
 }
 
 internal class CustomPermissionAlert: PermissionAlert {
