@@ -205,7 +205,7 @@ open class Permission: NSObject {
         return PrePermissionAlert(permission: self)
     }()
     
-    open func useCustomPrePermissionAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+    open func useCustomPrePermissionAlert(withDelegate delegate: CustomPermissionAlertCreator) {
         self.prePermissionAlert = self.prePermissionAlert.createCustomAlert(customAlertDelegate: delegate)
     }
     
@@ -217,7 +217,7 @@ open class Permission: NSObject {
         return DeniedAlert(permission: self)
     }()
     
-    open func useCustomDeniedAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+    open func useCustomDeniedAlert(withDelegate delegate: CustomPermissionAlertCreator) {
         self.deniedAlert = self.deniedAlert.createCustomAlert(customAlertDelegate: delegate)
     }
     
@@ -229,7 +229,7 @@ open class Permission: NSObject {
         return DisabledAlert(permission: self)
     }()
     
-    open func useCustomDisabledAlert(withDelegate delegate: CustomPermissionAlertDelegate) {
+    open func useCustomDisabledAlert(withDelegate delegate: CustomPermissionAlertCreator) {
         self.disabledAlert = self.disabledAlert.createCustomAlert(customAlertDelegate: delegate)
     }
     

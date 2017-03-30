@@ -90,7 +90,7 @@ public extension PermissionAlert {
     ///
     /// - Parameter delegate: the custom permission alert delegate
     /// - Returns: the new permission alert
-    public func createCustomAlert(customAlertDelegate delegate: CustomPermissionAlertDelegate) -> PermissionAlert {
+    public func createCustomAlert(customAlertDelegate delegate: CustomPermissionAlertCreator) -> PermissionAlert {
         return CustomPermissionAlert(permission: self.permission, existingAlert: self, delegate: delegate)
     }
 }
@@ -176,22 +176,29 @@ internal class PrePermissionAlert: PermissionAlert {
     }
 }
 
-@objc public protocol CustomPermissionAlertDelegate {
-    func createAlertController(onCancel: @escaping (() -> Void), goToSettings: @escaping (() -> Void), requestAccess: @escaping (() -> Void)) -> UIViewController
+
+public protocol CustomPermissionAlertDelegate {
+    func onCancel()
+    func goToSettings()
+    func requestPermission()
+}
+
+public protocol CustomPermissionAlertCreator {
+    func createAlertController(customPermissionAlertDelegate delegate: CustomPermissionAlertDelegate) -> UIViewController
 }
 
 internal class CustomPermissionAlert: PermissionAlert {
     
-    var delegate: CustomPermissionAlertDelegate
+    var delegate: CustomPermissionAlertCreator
     var permissionAlert: PermissionAlert
     fileprivate lazy var fakeAction: UIAlertAction = UIAlertAction(title: "", style: .default, handler: nil)
     
     override var controller: UIViewController {
-        return delegate.createAlertController(onCancel: self.onCancel, goToSettings: self.goToSettings, requestAccess: self.onRequestAccess)
+        return self.delegate.createAlertController(customPermissionAlertDelegate: self)
     }
     
     
-    public init(permission: Permission, existingAlert alert: PermissionAlert, delegate: CustomPermissionAlertDelegate) {
+    public init(permission: Permission, existingAlert alert: PermissionAlert, delegate: CustomPermissionAlertCreator) {
         self.delegate = delegate
         self.permissionAlert = alert
         super.init(permission: permission)
@@ -201,7 +208,10 @@ internal class CustomPermissionAlert: PermissionAlert {
         self.settings = alert.settings
         self.confirm = alert.confirm
     }
+
     
+}
+extension CustomPermissionAlert: CustomPermissionAlertDelegate {
     func onCancel() {
         self.permissionAlert.cancelHandler(self.fakeAction)
     }
@@ -212,13 +222,11 @@ internal class CustomPermissionAlert: PermissionAlert {
         }
     }
     
-    func onRequestAccess() {
+    func requestPermission() {
         if let alert = self.permissionAlert as? PrePermissionAlert {
             alert.confirmHandler(self.fakeAction)
         }
     }
-    
 }
-
 
 
