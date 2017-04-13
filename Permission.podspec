@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.default_subspec = 'Core'
-
+  s.pod_target_xcconfig = { "SWIFT_ACTIVE_COMPILATION_CONDITIONS" => "$(inherited)" }
   s.subspec 'Core' do |co|
     co.source_files = "Source/**/*.{swift, h}"
   end
