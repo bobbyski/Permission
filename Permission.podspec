@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Bluetooth' do |bl|
     bl.dependency 'Permission/Core'
-    bl.pod_target_xcconfig = { "OTHER_SWIFT_FLAGS"  => "PERMISSION_BLUETOOTH" }
+    bl.pod_target_xcconfig = { "OTHER_SWIFT_FLAGS"  => "-DPERMISSION_BLUETOOTH" }
   end
 
   s.subspec 'Camera' do |cm|
